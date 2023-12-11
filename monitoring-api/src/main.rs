@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
 
     let cpu_usage = Gauge::new("cpu_usage", "Current CPU usage in percent").unwrap();
     let mem_usage = Gauge::new("mem_usage", "Current memory usage in percent").unwrap();
-
+    let process_collector = prometheus::process_collector::ProcessCollector::for_self();
     prometheus
         .registry
         .register(Box::new(cpu_usage.clone()))
@@ -39,16 +39,16 @@ async fn main() -> std::io::Result<()> {
         .register(Box::new(mem_usage.clone()))
         .unwrap();
     thread::spawn(move || loop {
-        match sys.cpu_load_aggregate() {
-            Ok(cpu) => {
-                thread::sleep(Duration::from_secs(1));
-                let cpu = cpu.done().unwrap();
-                cpu_usage.set(f64::trunc(
-                    ((cpu.system * 100.0) + (cpu.user * 100.0)).into(),
-                ));
-            }
-            Err(x) => println!("\nCPU load: error: {}", x),
-        }
+        // match sys.cpu_load_aggregate() {
+        //     Ok(cpu) => {
+        //         thread::sleep(Duration::from_secs(1));
+        //         let cpu = cpu.done().unwrap();
+        //         cpu_usage.set(f64::trunc(
+        //             ((cpu.system * 100.0) + (cpu.user * 100.0)).into(),
+        //         ));
+        //     }
+        //     Err(x) => println!("\nCPU load: error: {}", x),
+        // }
         match sys.memory() {
             Ok(mem) => {
                 let memory_used = mem.total.0 - mem.free.0;
