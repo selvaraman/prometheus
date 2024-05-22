@@ -17,6 +17,11 @@ async fn hello(name: web::Path<String>) -> impl Responder {
     format!("Hello {}!", &name)
 }
 
+#[get("/sample/{tail:.*}")]
+async fn sample_url() -> impl Responder {
+    "success" 
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let sys = System::new();
@@ -28,7 +33,7 @@ async fn main() -> std::io::Result<()> {
 
     let cpu_usage = Gauge::new("cpu_usage", "Current CPU usage in percent").unwrap();
     let mem_usage = Gauge::new("mem_usage", "Current memory usage in percent").unwrap();
-    let process_collector = prometheus::process_collector::ProcessCollector::for_self();
+//    let process_collector = prometheus::process_collector::ProcessCollector::for_self();
     prometheus
         .registry
         .register(Box::new(cpu_usage.clone()))
@@ -64,6 +69,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(prometheus.clone())
             .service(index)
             .service(hello)
+            .service(sample_url)
     })
     .bind(("127.0.0.1", 4000))?
     .run()
